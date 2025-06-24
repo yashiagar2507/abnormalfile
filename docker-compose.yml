@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the backend folder (your app code)
+      - ./backend:/app/backend
+
+      # Mount the SQLite DB file directly to make sure Django writes here
+      - ./backend/db.sqlite3:/app/db.sqlite3
+
+      # Mount the media folder so uploaded files are saved and visible
+      - ./backend/media:/app/media
+    environment:
+      - DJANGO_DEBUG=True
+      - DJANGO_SECRET_KEY=insecure-dev-only-key
+    restart: always
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api
+    depends_on:
+      - backend
+    restart: always
+
+# Optional named volumes section (only needed if using volumes above — not required now)
+volumes:
+  # Removed backend_data to avoid conflicts with direct db.sqlite3 mount
+  backend_storage:
+  backend_static:
